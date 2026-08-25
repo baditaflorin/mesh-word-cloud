@@ -1,0 +1,4 @@
+# Vite's bundled Radix runtime embeds formatted CSS strings. Those intentional
+# spaces are not source-code whitespace errors, so keep generated bundles out
+# of Git's trailing-whitespace checks while preserving checks for app sources.
+docs/assets/*.js -whitespace

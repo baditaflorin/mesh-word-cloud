@@ -34,13 +34,35 @@ test("two peers in the same room can both load", async ({ browser, baseURL }) =>
     // accessibility tree. Close it on each peer before asserting the shared
     // app surface, without changing the app's onboarding behavior.
     await Promise.all([closeInitiallyOpenSettings(a), closeInitiallyOpenSettings(b)]);
-    await expect(a.locator(".mesh-self-ref, .self-ref").first()).toBeVisible();
-    await expect(b.locator(".mesh-self-ref, .self-ref").first()).toBeVisible();
-    // Both should reach a non-loading state within the timeout — most apps
-    // either show a count, a heading, or a primary control. We assert that
-    // at least one <h1> is present on both pages.
+    // Both should mount the universal shell and one real app heading. The
+    // former prototype footer is intentionally no longer a release signal.
+    await expect(a.locator("[data-mesh-app-shell]").first()).toBeVisible();
+    await expect(b.locator("[data-mesh-app-shell]").first()).toBeVisible();
     await expect(a.getByRole("heading", { level: 1 }).first()).toBeVisible();
     await expect(b.getByRole("heading", { level: 1 }).first()).toBeVisible();
+  } finally {
+    await cleanup();
+  }
+});
+
+test("two peers contribute to the same room cloud", async ({ browser, baseURL }) => {
+  const { a, b, cleanup } = await openTwoPeers(browser, baseURL ?? "", { storagePrefix });
+  try {
+    await Promise.all([closeInitiallyOpenSettings(a), closeInitiallyOpenSettings(b)]);
+
+    await a.getByLabel("Your one word").fill("clarity");
+    await a.getByRole("button", { name: "Share word" }).click();
+    await expect(a.locator(".cloud").getByText("clarity", { exact: false })).toBeVisible();
+    await expect(b.locator(".cloud").getByText("clarity", { exact: false })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await b.getByLabel("Your one word").fill("momentum");
+    await b.getByRole("button", { name: "Share word" }).click();
+    await expect(a.locator(".cloud").getByText("momentum", { exact: false })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(b.locator(".cloud").getByText("clarity", { exact: false })).toBeVisible();
   } finally {
     await cleanup();
   }
