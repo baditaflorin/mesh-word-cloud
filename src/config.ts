@@ -2,6 +2,7 @@ import { createMeshConfig } from "@baditaflorin/mesh-common";
 
 export const config = createMeshConfig({
   appName: "mesh-word-cloud",
+  breadcrumbs: false,
   displayName: "Room Words",
   description: "A shared one-word reflection cloud for live groups.",
   visualProfile: "gather",
